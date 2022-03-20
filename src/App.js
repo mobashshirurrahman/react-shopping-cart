@@ -2,36 +2,56 @@ import React from "react";
 // import CartItem from "./CartItem";
 import Cart from "./Cart";
 import Navbar from "./Navbar";
+// import firebase from 'firebase/app';
+import firebase from "firebase/compat/app";
 
 class App extends React.Component {
   constructor() {
     super();
     this.state = {
-      products: [
-        {
-          price: 999,
-          title: "Watch",
-          qty: 1,
-          img: "https://cdn-icons.flaticon.com/png/512/3109/premium/3109881.png?token=exp=1647758438~hmac=4d17ef80e638ed222ee8fbd6846f1aa3",
-          id: 1,
-        },
-        {
-          price: 4999,
-          title: "Phone",
-          qty: 1,
-          img: "https://cdn-icons.flaticon.com/png/512/3137/premium/3137807.png?token=exp=1647758498~hmac=d82dbaa316b1f6626f5b1cd35466e27f",
-          id: 2,
-        },
-        {
-          price: 59999,
-          title: "Laptop",
-          qty: 1,
-          img: "https://cdn-icons.flaticon.com/png/512/2888/premium/2888701.png?token=exp=1647758470~hmac=e677bd4d37c45a0b91bf69adbcadf2d3",
-          id: 3,
-        },
-      ],
+      products: [],
+      loading: true,
     };
     // this.testing();
+  }
+  componentDidMount() {
+    // firebase
+    //   .firestore()
+    //   .collection("products")
+    //   .get()
+    //   .then((snapshot) => {
+    //     // console.log(snapshot);
+    //     snapshot.docs.map((doc) => {
+    //       console.log(doc.data());
+    //     });
+    //     const products = snapshot.docs.map((doc) => {
+    //       const data = doc.data();
+    //       data['id'] = doc.id
+    //       return data;
+    //     });
+    //     this.setState({
+    //       products,
+    //       loading:false
+    //     })
+    //   });
+    firebase
+      .firestore()
+      .collection("products")
+      .onSnapshot((snapshot) => {
+        // console.log(snapshot);
+        snapshot.docs.map((doc) => {
+          console.log(doc.data());
+        });
+        const products = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          data["id"] = doc.id;
+          return data;
+        });
+        this.setState({
+          products,
+          loading: false,
+        });
+      });
   }
   handleIncreaseQuantity = (product) => {
     const { products } = this.state;
@@ -59,6 +79,7 @@ class App extends React.Component {
     this.setState({
       products: items,
     });
+    return "";
   };
   getCartCount = () => {
     const { products } = this.state;
@@ -69,18 +90,18 @@ class App extends React.Component {
     });
     return count;
   };
-  getCartTotal = () =>{
+  getCartTotal = () => {
     const { products } = this.state;
     let total = 0;
 
     products.map((product) => {
       total = total + product.qty * product.price;
-    })
+    });
 
     return total;
-  }
+  };
   render() {
-    const { products } = this.state;
+    const { products, loading } = this.state;
 
     return (
       <div className="App">
@@ -90,9 +111,11 @@ class App extends React.Component {
           onIncreaseQuantity={this.handleIncreaseQuantity}
           onDecreaseQuantity={this.handleDecreaseQuantity}
           onDeleteProducts={this.handleDeleteProduct}
-          
         />
-        <div style={{padding: 10, fontSize: 22}}>TOTAL: {this.getCartTotal()}</div>
+        {loading && <h1>Loading Products ...</h1>}
+        <div style={{ padding: 10, fontSize: 22 }}>
+          TOTAL: {this.getCartTotal()}
+        </div>
       </div>
     );
   }
